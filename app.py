@@ -1,5 +1,5 @@
+import os
 import interactions
-from configparser import ConfigParser
 from query import (
     retrieve_ASAs,
     ASA_overview,
@@ -13,10 +13,7 @@ from query import (
 )
 
 
-config = ConfigParser()
-config.read("config.ini")
-token = config["BOT"]["NAMEHERE"]
-bot = interactions.Client(token=token)
+bot = interactions.Client(token=os.environ.get(BOT_TOKEN))
 
 
 ENDING_NOTE = (
