@@ -13,7 +13,7 @@ from query import (
 )
 
 
-bot = interactions.Client(token=os.environ.get(BOT_TOKEN))
+bot = interactions.Client(token=os.getenv("BOT_TOKEN"))
 
 
 ENDING_NOTE = (
