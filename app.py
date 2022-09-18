@@ -134,7 +134,9 @@ async def get_analytics(ctx: interactions.CommandContext, asset_name: str):
     """Hey! I give social insight for crypto assets. What asset do you want to analyze?"""
     global specific_ASA, ASA_ID
     specific_ASA = asset_name
-    if asset_name.lower() in asa_name_table or asset_name.lower() in asa_unit1_table:
+    if (
+        asset_name.lower() in asa_name_table or asset_name.lower() in asa_unit1_table
+    ):  # find name in our table
         ASA_ID = asa_name_table.get(asset_name.lower())
         if not ASA_ID:
             ASA_ID = asa_unit1_table.get(asset_name.lower())
@@ -149,7 +151,7 @@ async def get_analytics(ctx: interactions.CommandContext, asset_name: str):
             await ctx.send(
                 "I also have access to Twitter, Reddit and Github data. Which would you like to see first?\n",
                 components=row_base,
-            )  # Editing this later to account for Available data vs Unavailable data
+            )
             global reddit_post_data
             reddit_post_data = reddit_post_overview(
                 ASA_ID
@@ -160,7 +162,7 @@ async def get_analytics(ctx: interactions.CommandContext, asset_name: str):
         )
 
 
-### * Button Actions*
+### * Button Actions *
 @bot.component("twitter")
 async def button1_response(ctx):
     result = twitter_overview(ASA_ID)
@@ -197,8 +199,13 @@ async def button13_response(ctx):
 
 @bot.component("reddit")
 async def button2_response(ctx):
+    reddit_result = next(reddit_post_data)  # format reddit result
+    printout = ""
+    for key in reddit_result:
+        printout += "{}: {}\n".format(key, reddit_result.get(key))
+
     await ctx.send(
-        f"Here are key analytics of some {specific_ASA}'s hot posts on Reddit:\n{next(reddit_post_data)}",
+        f"Here are key analytics of some {specific_ASA}'s hot posts on Reddit:\n\n{printout}",
         components=row_reddit_a,
     )
 
@@ -211,8 +218,13 @@ async def button21_response(ctx):
 @bot.component("next")
 async def button22_response(ctx):
     try:
+        reddit_result = next(reddit_post_data)  # format reddit result
+        printout = ""
+        for key in reddit_result:
+            printout += "\t{}: {}\n".format(key, reddit_result.get(key))
+
         await ctx.send(
-            f"Here is another:\n{next(reddit_post_data)}",
+            f"Here is another:\n\n{printout}",
             components=row_reddit_a,
         )
     except:
@@ -229,17 +241,31 @@ async def button3_response(ctx):
 
 @bot.component("perrepo")
 async def button31_response(ctx):
-    await ctx.send(
-        str(github_per_repo(ASA_ID))[:2000]
-    )  # interpreting it as a string for now, need a finer response style
+    giant_string = "Analyzing based on repo: \n\n"
+    for repo in github_per_repo(ASA_ID):
+        if len(giant_string) > 1800:
+            await ctx.send(giant_string)
+            giant_string = ""
+        for key in repo:
+            giant_string += "{}: {}\n".format(key, repo.get(key))
+        giant_string += "\n"
+
+    await ctx.send(giant_string)
     await ctx.send(ENDING_NOTE)
 
 
 @bot.component("pertime")
 async def button32_response(ctx):
-    await ctx.send(
-        str(github_per_time(ASA_ID))
-    )  # interpreting it as a string for now, need a finer response style
+    giant_string = "Analyzing based on Time Trends: \n"
+    for time_cluster in github_per_time(ASA_ID):
+        if len(giant_string) > 1800:
+            await ctx.send(giant_string)
+            giant_string = ""
+        for key in time_cluster:
+            giant_string += "{}: {}\n".format(key, time_cluster.get(key))
+        giant_string += "\n"
+
+    await ctx.send(giant_string)
     await ctx.send(ENDING_NOTE)
 
 
