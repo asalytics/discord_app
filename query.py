@@ -49,11 +49,24 @@ def ASA_overview(asset_id):
 
         return "{:.0f}{}".format(n / 10 ** (3 * millidx), millnames[millidx])
 
-    if not all(result.values()):
-        return result
-    return f"\tValue: ${round(float(result['usdValue']), 6)}\n\
-    Total Supply: {millify(int(result['totalSupply'][:-result['fractionDecimals']]))}\n\
-    Circ. Supply: {millify(int(result['circSupply'][:-result['fractionDecimals']]))}"
+    try:
+        usd_value = round(float(result["usdValue"]), 6)
+    except:
+        usd_value = "N/A"
+    try:
+        total_supply = millify(
+            int(result["totalSupply"][: -result["fractionDecimals"]])
+        )
+    except:
+        total_supply = "N/A"
+    try:
+        circ_supply = millify(int(result["circSupply"][: -result["fractionDecimals"]]))
+    except:
+        circ_supply = "N/A"
+
+    return f"\tValue: ${usd_value}\n\
+    Total Supply: {total_supply}\n\
+    Circ. Supply: {circ_supply}\n"
 
 
 def reddit_post_overview(asset_id):
@@ -130,7 +143,14 @@ def twitter_analytics(asset_id, analyze="likes", timedate="weekday"):
         )
     r = requests.post(URL, json={"query": query})
     result = json.loads(r.text)["data"]["twitterAnalytics"]["results"]
-    return result
+
+    printout = ""
+    for indv_result in result:
+        for key in indv_result:
+            printout += "{}: {}\t".format(key, indv_result.get(key))
+        printout += "\n"
+
+    return printout
 
 
 def github_overview(asset_id):
